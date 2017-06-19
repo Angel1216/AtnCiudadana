@@ -1,0 +1,95 @@
+package com.nd.dao;  
+  
+import java.util.ArrayList;
+import java.util.List;  
+
+import org.hibernate.Session;  
+import org.hibernate.SessionFactory;  
+import org.springframework.beans.factory.annotation.Autowired;  
+import org.springframework.stereotype.Repository;  
+
+import com.nd.bean.CatStatus;
+import com.nd.bean.Usuario;
+import com.nd.bean.VLlamadaEmergencia;
+  
+@Repository  
+public class DAO {
+  
+ @Autowired  
+ private SessionFactory sessionFactory;  
+  
+ public void setSessionFactory(SessionFactory sf) {  
+  this.sessionFactory = sf;  
+ }  
+ 
+ 	public Usuario addUsuario(Usuario usuario) {  
+	  Session session = this.sessionFactory.getCurrentSession();  
+	  session.persist(usuario);  
+	  return usuario;  
+ 	}
+
+ 	public Usuario getUserByNameAndPass(String flEmail , String flPass){
+ 		
+ 		Session session = this.sessionFactory.getCurrentSession();
+ 		List<Usuario> lstUsuarioRes = new ArrayList<Usuario>();
+ 		Usuario objUsuario = null;
+ 		try{
+ 			session.clear();
+ 			@SuppressWarnings("unchecked")
+ 			 			List<Usuario> lstUsuario = session.createQuery("from Usuario where email = ?")
+ 					.setParameter(0, flEmail)
+ 					.list();
+ 			if(lstUsuario.size()==0){
+ 				objUsuario = new Usuario();
+ 				objUsuario.setEstatus(1002);
+ 				lstUsuario.add(objUsuario);
+ 			}
+ 			else if(!lstUsuario.get(0).getContrasenia().equals(flPass))
+ 			{
+ 				objUsuario = new Usuario();
+ 				objUsuario.setEstatus(1000);
+ 				lstUsuario.clear();
+ 				lstUsuario.add(objUsuario);
+ 			}
+ 			
+ 			lstUsuarioRes = lstUsuario;
+ 		} catch(Exception ex){
+ 				objUsuario = new Usuario();
+				objUsuario.setEstatus(1001);
+				lstUsuarioRes.add(objUsuario);
+ 		}
+ 		
+ 		return lstUsuarioRes.get(0);
+ 	}
+ 	
+ 	public Usuario getUserByEmail(String flEmail){
+ 		Session session = this.sessionFactory.getCurrentSession();
+ 		@SuppressWarnings("unchecked")
+ 		List<Usuario> lstUsuario = session.createQuery("from Usuario where email = ?")
+ 				.setParameter(0, flEmail)
+ 				.list();
+ 		return lstUsuario.size() > 0 ? lstUsuario.get(0): null;
+ 	}
+ 	
+ 	public Usuario getUserByIdUsuario(Integer flIdUsuario){
+ 		Session session = this.sessionFactory.getCurrentSession();
+ 		@SuppressWarnings("unchecked")
+ 		List<Usuario> lstUsuario = session.createQuery("from Usuario where usuarioId = ?")
+ 				.setParameter(0, flIdUsuario)
+ 				.list();
+ 		return lstUsuario.size() > 0 ? lstUsuario.get(0): null;
+ 	}
+ 	public List<CatStatus> getStatus(){
+ 		Session session = this.sessionFactory.getCurrentSession();
+ 		@SuppressWarnings("unchecked")
+ 		List<CatStatus> listStatus = session.createQuery("from CatStatus").list();
+ 		return listStatus.size() > 0 ? listStatus: null;
+ 	}
+ 	
+ 	public List<VLlamadaEmergencia> getIncomingCall(){
+ 		Session session = this.sessionFactory.getCurrentSession();
+ 		@SuppressWarnings("unchecked")
+ 		List<VLlamadaEmergencia> lstLlamadaEmergencia = session.createQuery("FROM VLlamadaEmergencia WHERE ESTATUS_LLAMADA IS NULL ORDER BY FECHA DESC").list();
+ 		return lstLlamadaEmergencia.size() > 0 ? lstLlamadaEmergencia: null;
+ 	}
+}

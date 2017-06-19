@@ -1,0 +1,33 @@
+package com.nd.dao;
+
+import java.util.List;
+
+import org.hibernate.Query;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import com.nd.bean.RelPerServ;
+import com.nd.bean.RelUsuEmergencia;
+import com.nd.bean.Usuario;
+
+@Repository
+public class DAOBotonPanico
+{
+	@Autowired
+	private SessionFactory sessionFactory;
+	
+	public void insertarDatosBotonPanico(RelUsuEmergencia datosBPanico){
+		Session sesion = this.sessionFactory.getCurrentSession();
+		sesion.persist(datosBPanico);
+	}
+	
+	public void saveStatusCall(Integer status, Integer idObjReg){
+		Session session = this.sessionFactory.getCurrentSession();
+		 session.createQuery("UPDATE RelUsuEmergencia set RemEstatusLlamada = ? WHERE remIdRelUsuEmerg = ?")
+				.setParameter(0, status)
+				.setParameter(1, idObjReg)
+				.executeUpdate();		 
+	}
+}

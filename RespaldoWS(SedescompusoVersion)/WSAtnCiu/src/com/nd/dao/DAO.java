@@ -1,0 +1,46 @@
+package com.nd.dao;  
+  
+import java.util.List;  
+
+import org.hibernate.Session;  
+import org.hibernate.SessionFactory;  
+import org.springframework.beans.factory.annotation.Autowired;  
+import org.springframework.stereotype.Repository;  
+
+import com.nd.bean.Usuario;
+  
+@Repository  
+public class DAO {
+  
+ @Autowired  
+ private SessionFactory sessionFactory;  
+  
+ public void setSessionFactory(SessionFactory sf) {  
+  this.sessionFactory = sf;  
+ }  
+ 
+ 	public Usuario addUsuario(Usuario usuario) {  
+	  Session session = this.sessionFactory.getCurrentSession();  
+	  session.persist(usuario);  
+	  return usuario;  
+ 	}
+
+ 	public Usuario getUserByNameAndPass(String flEmail , String flPass){
+ 		Session session = this.sessionFactory.getCurrentSession();
+ 		@SuppressWarnings("unchecked")
+ 		List<Usuario> lstUsuario = session.createQuery("from Usuario where email = ? and contrasenia = ?")
+ 				.setParameter(0, flEmail)
+ 				.setParameter(1, flPass)
+ 				.list();
+ 		return lstUsuario.size() > 0 ? lstUsuario.get(0): null;
+ 	}
+ 	
+ 	public Usuario getUserByEmail(String flEmail){
+ 		Session session = this.sessionFactory.getCurrentSession();
+ 		@SuppressWarnings("unchecked")
+ 		List<Usuario> lstUsuario = session.createQuery("from Usuario where email = ?")
+ 				.setParameter(0, flEmail)
+ 				.list();
+ 		return lstUsuario.size() > 0 ? lstUsuario.get(0): null;
+ 	}
+}

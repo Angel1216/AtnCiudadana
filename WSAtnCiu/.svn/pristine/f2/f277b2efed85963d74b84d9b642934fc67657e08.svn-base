@@ -1,0 +1,180 @@
+package com.nd.service;
+
+import java.util.ArrayList;
+import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.nd.bean.Archivos;
+import com.nd.bean.RelPerServ;
+import com.nd.bean.ServicioPadre;
+import com.nd.bean.Usuario;
+import com.nd.dao.DAORelPerServ;
+
+import sun.misc.BASE64Decoder;
+import sun.misc.BASE64Encoder;
+
+import com.nd.utils.AsyncScalr;
+import com.nd.utils.Scalr;
+
+import java.awt.AlphaComposite;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.File;
+
+import javax.imageio.ImageIO;
+
+@Service("countryServiceReport") 
+public class ServiceRelPerServ {
+	 @Autowired  
+	 DAORelPerServ daoReport; 
+	 
+	 @Transactional  
+	 public void updateRelPerServ(RelPerServ objRelPerServ) {  
+	 	daoReport.updateRelPerServ(objRelPerServ);  
+	 }
+	 
+	 @Transactional
+	 public List<RelPerServ> getRelPerSerByIdUser(Usuario objUsuario){
+		 List<RelPerServ> list = daoReport.getRelPerSerByIdUser(objUsuario); 
+		 return list;
+	 }
+	 @Transactional
+		public List<RelPerServ> getRelPerSerByIdService(ServicioPadre objServicioPadre){
+		 List<RelPerServ> list = daoReport.getRelPerSerByIdService(objServicioPadre); 
+		 return list;
+	 }
+    @Transactional
+    public String getUltimoFolio() {
+        return daoReport.getUltimoFolio();
+    }
+    
+    @Transactional
+    public RelPerServ getRelPerSerById(Integer idRelPerServ){
+    	return daoReport.getRelPerSerById(idRelPerServ);
+    }
+	 
+	 @Transactional
+	 public List<Integer> getFilesByIdUsuCatServ(Integer rpcIdusucatser){
+		 return daoReport.getFilesByIdUsuCatServ(rpcIdusucatser);
+	 }
+	 
+	 @Transactional
+	 public byte[] getImageByArcIdArchivo(Integer arcIdArchivo) {
+		 return daoReport.getImageByArcIdArchivo(arcIdArchivo);
+	 }
+	 
+	 @Transactional
+	 public String getImage64ByArcIdArchivo(Integer arcIdArchivo) {
+		 byte[] vlByteImage = daoReport.getImageByArcIdArchivo(arcIdArchivo);
+		 BASE64Encoder encoder = new BASE64Encoder();
+		 return encoder.encode(vlByteImage);
+	 }
+	 
+	 private BufferedImage convertByteArrayToBufferedImage(byte[] imageInByte) throws IOException {
+		 InputStream in = new ByteArrayInputStream(imageInByte);
+		 BufferedImage bImageFromConvert = ImageIO.read(in);
+		 return bImageFromConvert;
+	 }
+	 
+	 private byte[] convertBufferedImageToByteArray(BufferedImage originalImage) throws IOException{
+		 ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		 ImageIO.write(originalImage, "jpg", baos);
+		 baos.flush();
+		 byte[] imageInByte = baos.toByteArray();
+		 baos.close();
+		 return imageInByte;
+	 }
+	 
+	 private BufferedImage resizeImageWithHint(BufferedImage originalImage, int width, int height){
+		  
+			BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+			Graphics2D g = resizedImage.createGraphics();
+			g.drawImage(originalImage, 0, 0, width, height, null);
+			g.dispose();
+			g.setComposite(AlphaComposite.Src);
+			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+			RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+			g.setRenderingHint(RenderingHints.KEY_RENDERING,
+			RenderingHints.VALUE_RENDER_QUALITY);
+			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+			RenderingHints.VALUE_ANTIALIAS_ON);
+			return resizedImage;
+			
+		 /*
+		   BufferedImage bdest = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+		   Graphics2D g = bdest.createGraphics();
+		   AffineTransform at = AffineTransform.getScaleInstance((double)width / originalImage.getWidth(),
+				   				(double)height / originalImage.getHeight());
+		   g.drawRenderedImage(originalImage,at);
+		   return bdest;
+		   */
+	 }
+	 
+	 @Transactional
+	 public String getImage64SizeByArcIdArchivo(Integer arcIdArchivo, Integer width, Integer height) {
+		 byte[] vlByteImage = daoReport.getImageByArcIdArchivo(arcIdArchivo);
+		 String vlResultBase64 = "";
+			try {
+				BufferedImage vlBufferedImage = convertByteArrayToBufferedImage(vlByteImage);
+				// BufferedImage scaledImg = Scalr.resize(vlBufferedImage, Scalr.Method.AUTOMATIC, width, height);
+				BufferedImage scaledImg = resizeImageWithHint(vlBufferedImage, width, height);
+				byte[] vlByteImageScaled = convertBufferedImageToByteArray(scaledImg);
+				BASE64Encoder encoder = new BASE64Encoder();
+				vlResultBase64 = encoder.encode(vlByteImageScaled);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		  return vlResultBase64;
+	 }
+	 
+	 @Transactional
+	 public String getRelPerSerAlert(RelPerServ objRelPerServ){
+		 String JSON = "";
+		 Integer alertId = daoReport.addRelPerSerAlert(objRelPerServ);
+		 JSON = "{\"alertId\":" + alertId + "}";
+		 return JSON;  
+	 }
+	 
+	 @Transactional
+	 public void getRelPerSerArchivos(Archivos objArchivos){
+		 
+		 // Convertir Base64 a byte[]
+		 BASE64Decoder decoder = new BASE64Decoder();
+		 byte[] imageByte = null;
+		 
+		 try{
+		 	imageByte = decoder.decodeBuffer(objArchivos.getArchivoStr());
+		 	
+		 			// Convert byte array to BufferedImage
+		 			InputStream in = new ByteArrayInputStream(imageByte);
+		 			BufferedImage bImageFromConvert = ImageIO.read(in);
+		 			
+		 			BufferedImage bImageFromConvert2 = resizeImageWithHint(bImageFromConvert,653,490);
+		 			
+		 			// convert BufferedImage to byte array
+					ByteArrayOutputStream baos = new ByteArrayOutputStream();
+					ImageIO.write(bImageFromConvert2, "jpg", baos);
+					baos.flush();
+					byte[] imageInByte2 = baos.toByteArray();
+					baos.close();
+		 			
+		    // Actualizar Variables
+		   	objArchivos.setArcArchivo(imageInByte2);
+		   	objArchivos.setArchivoStr("OK");
+		   		 
+		   	// DAO
+		   	daoReport.addRelPerSerArchivos(objArchivos);
+		   	
+		 } catch(Exception ex){
+			 ex.getMessage();
+		 }
+	 }
+}

@@ -1,0 +1,58 @@
+package com.nd.service;
+
+import java.io.IOException;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.nd.bean.Archivos;
+import com.nd.bean.RelPerServ;
+import com.nd.dao.DAORelPerServ;
+
+
+import sun.misc.BASE64Decoder;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+
+
+
+@Service("countryServiceReport") 
+public class ServiceRelPerServ {
+	 @Autowired  
+	 DAORelPerServ daoReport; 
+	 
+	 @Transactional  
+	 public void updateRelPerServ(RelPerServ objRelPerServ) {  
+	 	daoReport.updateRelPerServ(objRelPerServ);  
+	 }
+	 
+	 @Transactional
+	 public List<RelPerServ> getRelPerSerByIdUser(Integer idUsuario){
+		 List<RelPerServ> list = daoReport.getRelPerSerByIdUser(idUsuario); 
+		 return list;
+	 }
+	 
+	 @Transactional
+	 public String getRelPerSerAlert(RelPerServ objRelPerServ){
+		 String JSON = "";
+		 Integer alertId = daoReport.addRelPerSerAlert(objRelPerServ);
+		 JSON = "{\"alertId\":" + alertId + "}";
+		 return JSON;  
+	 }
+	 
+	 @Transactional
+	 public void getRelPerSerArchivos(Archivos objArchivos){
+		 
+		 // Codificar
+		 Base64.Decoder decoder = Base64.getDecoder();
+		 byte[] decodedByteArray = decoder.decode(objArchivos.getArchivoStr());
+		 
+		 objArchivos.setArcArchivo(decodedByteArray);
+		 objArchivos.setArchivoStr("OK");
+		 
+		 daoReport.addRelPerSerArchivos(objArchivos);
+	 }
+}

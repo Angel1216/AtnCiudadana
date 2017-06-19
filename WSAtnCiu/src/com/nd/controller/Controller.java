@@ -1,0 +1,74 @@
+package com.nd.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.nd.bean.CatStatus;
+import com.nd.bean.Usuario;
+import com.nd.bean.VLlamadaEmergencia;
+import com.nd.service.Services;
+
+@RestController
+public class Controller {
+
+	@Autowired
+	Services services;
+
+	@RequestMapping(value = "/addUsuario", method = RequestMethod.POST, headers = "Accept=application/json")
+	public void addUsuario(@RequestBody Usuario usuario) {
+		services.addUsuario(usuario);
+	}
+
+	@RequestMapping(value = "/getUserByNameAndPass/{flEmail}/{flPass}", method = RequestMethod.GET, headers = "Accept=application/json")
+	public Usuario getUserByNameAndPass(
+			@PathVariable("flEmail") String flEmail,
+			@PathVariable("flPass") String flPass) {
+		Usuario flUser = services.getUserByNameAndPass(flEmail, flPass);
+		return flUser;
+	}
+
+	@RequestMapping(value = "/getUserByEmail/{flEmail}/", method = RequestMethod.GET)
+	public Boolean getUserByEmail(@PathVariable("flEmail") String flEmail) {
+		Usuario flUser = services.getUserByEmail(flEmail);
+		if (flUser != null) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	@RequestMapping(value = "/getUserByIdUsuario/{flIdUsuario}/", method = RequestMethod.GET)
+	public Usuario getUserByIdUsuario(
+			@PathVariable("flIdUsuario") Integer flIdUsuario) {
+		Usuario flUser = services.getUserByIdUsuario(flIdUsuario);
+		if (flUser != null) {
+			return flUser;
+		} else {
+			return null;
+		}
+	}
+
+	@RequestMapping(value = "/getStatus", method = RequestMethod.GET, headers = "Accept=application/json")
+	public List<CatStatus> getStatus() {
+		List<CatStatus> flStatus = services.getStatus();
+		return flStatus;
+	}
+
+	@RequestMapping(value = "/getIncomingCall", method = RequestMethod.GET, headers = "Accept=application/json")
+	public List<VLlamadaEmergencia> getIncomingCall() {
+		List<VLlamadaEmergencia> lstLlamadaEmergencia = services
+				.getIncomingCall();
+		return lstLlamadaEmergencia;
+	}
+	@RequestMapping(value = "/getCallStatus", method = RequestMethod.GET)
+	public List<VLlamadaEmergencia> getCallStatus() {
+		List<VLlamadaEmergencia> lstLlamadaStatus = services.getCallStatus();
+		return lstLlamadaStatus;
+	}
+}

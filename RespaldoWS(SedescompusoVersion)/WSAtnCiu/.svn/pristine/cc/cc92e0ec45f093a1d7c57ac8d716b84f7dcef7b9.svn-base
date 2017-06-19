@@ -1,0 +1,41 @@
+package com.nd.service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.nd.bean.Archivos;
+import com.nd.bean.RelPerServ;
+import com.nd.dao.DAORelPerServ;
+
+@Service("countryServiceReport") 
+public class ServiceRelPerServ {
+	 @Autowired  
+	 DAORelPerServ daoReport; 
+	 
+	 @Transactional  
+	 public void updateRelPerServ(RelPerServ objRelPerServ) {  
+	 	daoReport.updateRelPerServ(objRelPerServ);  
+	 }
+	 
+	 @Transactional
+	 public List<RelPerServ> getRelPerSerByIdUser(Integer idUsuario){
+		 List<RelPerServ> list = daoReport.getRelPerSerByIdUser(idUsuario); 
+		 return list;
+	 }
+	 
+	 @Transactional
+	 public String getRelPerSerAlert(RelPerServ objRelPerServ){
+		 String JSON = "";
+		 Integer alertId = daoReport.addRelPerSerAlert(objRelPerServ);
+		 JSON = "{\"alertId\":" + alertId + "}";
+		 return JSON;  
+	 }
+	 
+	 @Transactional
+	 public void getRelPerSerArchivos(Archivos objArchivos){
+		 daoReport.addRelPerSerArchivos(objArchivos);
+	 }
+}

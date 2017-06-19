@@ -1,0 +1,103 @@
+package com.nd.controller;  
+
+/**
+ *
+ * http://localhost:8080/WSAtnCiu/updateRelPerServ
+ * http://localhost:8080/WSAtnCiu/getRelPerSerByIdUser
+ *  
+ */
+
+import org.springframework.beans.factory.annotation.Autowired;    
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;  
+import org.springframework.web.bind.annotation.RequestMapping;  
+import org.springframework.web.bind.annotation.RequestMethod;  
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController; 
+import org.json.JSONException;
+
+import com.nd.bean.CatStatus;
+import com.nd.bean.RelPerServ;
+import com.nd.bean.Archivos;
+import com.nd.bean.ServicioPadre;
+import com.nd.bean.Usuario;
+import com.nd.service.ServiceRelPerServ;
+
+import java.util.List;
+
+@RestController  
+public class ControllerRelPerServ {
+
+	@Autowired  
+	ServiceRelPerServ serviceReport;
+
+	@RequestMapping(value = "/updateRelPerServ", method = RequestMethod.PUT, headers = "Accept=application/json")  
+	public void updateRelPerServ(@RequestBody RelPerServ objRelPerServ) {  
+		serviceReport.updateRelPerServ(objRelPerServ);  
+	}
+
+	@RequestMapping(value="/getRelPerSerByIdUser/{flIdUsuario}", method = RequestMethod.GET, headers = "Accept=application/json")
+	public @ResponseBody  List<RelPerServ> getRelPerSerByIdUser(@PathVariable ("flIdUsuario") Integer flIdUsuario) throws JSONException {
+		System.out.println("vlIdUsuario: " + flIdUsuario);
+		Usuario objUsuario = new Usuario(flIdUsuario);
+		List<RelPerServ> list = serviceReport.getRelPerSerByIdUser(objUsuario);
+		System.out.println("list: " + list);
+		return list;
+	}
+	
+	@RequestMapping(value="/getFilesByIdUsuCatServ/{rpcIdusucatser}", method = RequestMethod.GET, headers = "Accept=application/json")
+	public @ResponseBody  List<Integer> getFilesByIdUsuCatServ(@PathVariable ("rpcIdusucatser") Integer rpcIdusucatser) throws JSONException {
+		return serviceReport.getFilesByIdUsuCatServ(rpcIdusucatser);
+	}
+	
+	@RequestMapping(value = "/getImageByArcIdArchivo/{arcIdArchivo}", method = RequestMethod.GET, produces = "image/jpg")
+	public @ResponseBody byte[] getImageByArcIdArchivo(@PathVariable ("arcIdArchivo") Integer arcIdArchivo) throws JSONException {
+	    return serviceReport.getImageByArcIdArchivo(arcIdArchivo);
+	}
+	
+	@RequestMapping(value="/getImage64ByArcIdArchivo/{arcIdArchivo}", method = RequestMethod.GET, headers = "Accept=application/json")
+	public @ResponseBody String getImage64ByArcIdArchivo(@PathVariable ("arcIdArchivo") Integer arcIdArchivo) throws JSONException {
+	    return serviceReport.getImage64ByArcIdArchivo(arcIdArchivo);
+	}
+	
+	@RequestMapping(value="/getImage64SizeByArcIdArchivo/{arcIdArchivo}/{width}/{height}", method = RequestMethod.GET, headers = "Accept=application/json")
+	public @ResponseBody String getImage64SizeByArcIdArchivo(@PathVariable ("arcIdArchivo") Integer arcIdArchivo,
+			@PathVariable ("width") Integer width, @PathVariable ("height") Integer height
+			) throws JSONException {
+	    return serviceReport.getImage64SizeByArcIdArchivo(arcIdArchivo, width, height);
+	}
+	
+	@RequestMapping(value="/getRelPerSerByIdService/{flIdService}", method = RequestMethod.GET, headers = "Accept=application/json")
+	public @ResponseBody  List<RelPerServ> getRelPerSerByIdService(@PathVariable ("flIdService") Integer flIdService) throws JSONException {
+		ServicioPadre objServicioPadre = new ServicioPadre(flIdService);
+		List<RelPerServ> list = serviceReport.getRelPerSerByIdService(objServicioPadre);
+		System.out.println("list: " + list);
+		return list;
+	}
+	
+	@RequestMapping(value="/getRelPerSerAlert", method = RequestMethod.POST, headers = "Accept=application/json")
+	public String getRelPerSerAlert(@RequestBody RelPerServ objRelPerServ) throws JSONException {
+		 return serviceReport.getRelPerSerAlert(objRelPerServ);
+	}
+	
+	@RequestMapping(value="/getRelPerSerArchivos/{width}/{height}", method = RequestMethod.POST, headers = "Accept=application/json")
+	public void getRelPerSerArchivos(@RequestBody Archivos objArchivos, @PathVariable("width") Integer width, @PathVariable("height") Integer height) throws JSONException {
+		 serviceReport.getRelPerSerArchivos(objArchivos,width,height);
+	}
+	
+	@RequestMapping(value="/getUltimoFolio", method = RequestMethod.GET, headers = "Accept=application/json")
+	public String getUltimoFolio(){
+		String flFolio = serviceReport.getUltimoFolio();
+		return flFolio;
+	}
+	
+	@RequestMapping(value="/getRelPerSerById/{idRelPerServ}/", method = RequestMethod.GET)
+	public RelPerServ getRelPerSerById(@PathVariable ("idRelPerServ") Integer idRelPerServ){
+		RelPerServ objReg = serviceReport.getRelPerSerById(idRelPerServ);
+		if (objReg != null) {
+			return objReg;
+		} else {
+			return null;
+		}
+	}
+}
